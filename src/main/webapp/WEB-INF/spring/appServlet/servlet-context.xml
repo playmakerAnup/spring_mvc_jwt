@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+	xmlns="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd 
+        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+
+	<!-- JWT configuration starts here -->
+	<global-method-security
+		pre-post-annotations="enabled" />  <!-- (1) -->
+
+	
+	 <http pattern="/signIn" security="none" /> <!-- (2) --> 
+	<http pattern="/signup" security="none" /> 
+	<http pattern="/swagger-ui.html/**" security="none" />  
+	<http pattern="/" security="none" />
+	<!-- <http pattern="/" security="none"/> -->
+	
+	<!-- <http auto-config='true'> 
+	<intercept-url pattern="/**" access="ROLE_USER" 
+		/> </http> -->
+
+	<http pattern="/**" entry-point-ref="restAuthenticationEntryPoint"
+		create-session="stateless"> <!-- (3) -->
+		<csrf disabled="true" />  <!-- (4) -->
+		<custom-filter before="FORM_LOGIN_FILTER"
+			ref="jwtAuthenticationFilter" />  <!-- (5) -->
+	</http>
+
+	<beans:bean id="jwtAuthenticationFilter"
+		class="com.example.demo.jwt.filters.JwtAuthenticationFilter">  <!-- (6) -->
+		<beans:property name="authenticationManager"
+			ref="authenticationManager" />
+		<beans:property name="authenticationSuccessHandler"
+			ref="jwtAuthenticationSuccessHandler" />  <!-- (7) -->
+	</beans:bean>
+
+	<authentication-manager
+		alias="authenticationManager">
+		<authentication-provider
+			ref="jwtAuthenticationProvider" />  <!-- (8) -->
+	</authentication-manager>
+
+	<beans:bean id="jwtAuthenticationProvider"
+		class="com.example.demo.jwt.service.JwtAuthenticationProvider">
+	</beans:bean>
+
+	<beans:bean id="jwtAuthenticationSuccessHandler"
+		class="com.example.demo.jwt.service.JwtAuthenticationSuccessHandler">
+	</beans:bean>
+
+	<beans:bean id="restAuthenticationEntryPoint"
+		class="com.example.demo.jwt.configuration.RestAuthenticationEntryPoint">
+	</beans:bean>
+
+	<!-- JWT configuration ends here -->
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<mvc:annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<context:component-scan base-package="com.example.demo" />
+	
+	
+	
+	<!-- swagger configuration starts -->
+	<beans:bean id="swagger2Config"
+		class="springfox.documentation.swagger2.configuration.Swagger2DocumentationConfiguration">
+	</beans:bean>
+
+	<mvc:resources order="1" location="/resources/"
+		mapping="/resources/**" />
+	<mvc:resources mapping="swagger-ui.html"
+		location="classpath:/META-INF/resources/" />
+	<mvc:resources mapping="/webjars/**"
+		location="classpath:/META-INF/resources/webjars/" />
+	<mvc:default-servlet-handler />
+	<!-- swagger configuration ends -->
+
+
+</beans:beans>
