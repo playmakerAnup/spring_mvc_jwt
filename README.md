@@ -1,6 +1,6 @@
 # spring_mvc_jwt
 
-This projct includes all the required configurations in the .xml files. Also Filters involved have been explained with comments.
+A POC projct of spring mvc implementation with jwt which includes all the required .xml file configuration. Also the filters involved have been explained with comments for clarity.
 
 ## Getting Started
 
